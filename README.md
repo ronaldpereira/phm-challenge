@@ -1,2 +1,3 @@
-# phm-challenge
-PHM Data Challenge 2014 and 2016
+# PHM Challenge
+
+PHM Data Challenges from 2014 and 2016.
