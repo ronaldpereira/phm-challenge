@@ -1,57 +1,24 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# # PHM Data Challenge 2014
-
-# In[1]:
-
-
-get_ipython().run_line_magic('matplotlib', 'notebook')
-
-
-# In[2]:
-
+from collections import Counter
 
 import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
 
-
 # ## Data Loading
-
-# In[3]:
 
 
 consumption = pd.read_csv("../data/Train - Part Consumption.csv")
 
 
-# In[4]:
-
-
 usage = pd.read_csv("../data/Train - Usage.csv")
-
-
-# In[5]:
 
 
 failures = pd.read_csv("../data/Train - Failures.csv")
 
 
-# In[9]:
-
-
-from collections import Counter
-
-
-# In[10]:
-
-
 c = Counter(consumption.Reason)
 reason_count = c.most_common()
 print(reason_count)
-
-
-# In[11]:
 
 
 c = Counter(failures.Asset)
@@ -61,15 +28,10 @@ print(failures_count)
 
 # ## Data Preprocessing
 
-# In[12]:
-
 
 consumption.Time /= 730.0
 usage.Time /= 730.0
 failures.Time /= 730.0
-
-
-# In[16]:
 
 
 indexes = consumption.query("Quantity <= 0").index
@@ -79,29 +41,18 @@ consumption.reset_index(inplace=True)
 
 # ## Training Data construction
 
-# In[18]:
-
 
 train_df = consumption.copy()
 train_df.drop("index", axis=1, inplace=True)
 
 
-# In[19]:
-
-
 print(train_df.shape)
-
-
-# In[20]:
 
 
 train_df["Failure"] = [False] * train_df.shape[0]
 train_df["Time_failure"] = [0] * train_df.shape[0]
 train_df["Time_diff"] = [0] * train_df.shape[0]
 train_df["Usage_on_failure"] = [0] * train_df.shape[0]
-
-
-# In[22]:
 
 
 for fail_asset, fail_time in tqdm(list(failures.itertuples(index=False, name=None))):
@@ -116,7 +67,7 @@ for fail_asset, fail_time in tqdm(list(failures.itertuples(index=False, name=Non
         usage_prev_value = usage_prev.iloc[0, 2]
         usage_next_time = usage_next.iloc[0, 1]
         usage_next_value = usage_next.iloc[0, 2]
-        
+
         if usage_next_time - usage_prev_time > 0:
             usage_failure_value = fail_time - usage_prev_time
             usage_failure_value /= usage_next_time - usage_prev_time
@@ -139,13 +90,7 @@ for fail_asset, fail_time in tqdm(list(failures.itertuples(index=False, name=Non
 # train_df = pd.read_csv("../data/train_features.csv")
 
 
-# In[23]:
-
-
 print(train_df.query("Failure==True"))
-
-
-# In[24]:
 
 
 train_df.to_csv("../data/train_features.csv", index=False)
@@ -153,13 +98,8 @@ train_df.to_csv("../data/train_features.csv", index=False)
 
 # This train set above does not really express others examples by considering some negative failures instances. So, I'll do this on Usage_on_failure column, by just measuring the usage on the Time column.
 
-# In[25]:
-
 
 train_df.drop(["Time_failure", "Time_diff", "Usage_on_failure"], axis=1, inplace=True)
-
-
-# In[26]:
 
 
 for index, row in tqdm(train_df[["Asset", "Time"]].iterrows()):
@@ -167,14 +107,14 @@ for index, row in tqdm(train_df[["Asset", "Time"]].iterrows()):
     asset = row.Asset
     usage_next = usage.query("Time >= @time and Asset == @asset").head(1)
     usage_prev = usage.query("Time <= @time and Asset == @asset").tail(1)
-    
+
     usage_value = 0
     if len(usage_next) > 0 and len(usage_prev) > 0:
         usage_prev_time = usage_prev.iloc[0, 1]
         usage_prev_value = usage_prev.iloc[0, 2]
         usage_next_time = usage_next.iloc[0, 1]
         usage_next_value = usage_next.iloc[0, 2]
-        
+
         if usage_next_time - usage_prev_time > 0:
             usage_value = row.Time - usage_prev_time
             usage_value /= usage_next_time - usage_prev_time
@@ -182,12 +122,8 @@ for index, row in tqdm(train_df[["Asset", "Time"]].iterrows()):
             usage_value += usage_prev_value
         else:
             usage_value = usage_next_value
-            
+
     train_df.loc[index, "Usage_on_time"] = usage_value
 
 
-# In[27]:
-
-
 train_df.to_csv("../data/train_features_usage.csv", index=False)
-
