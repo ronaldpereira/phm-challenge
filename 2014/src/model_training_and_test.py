@@ -1,6 +1,6 @@
 import joblib
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
 RANDOM_SEED = 1212
@@ -24,13 +24,14 @@ x_train, x_test, y_train, y_test = train_test_split(
 )
 
 
-model = RandomForestRegressor(
+model = RandomForestClassifier(
     n_estimators=2000, n_jobs=-1, verbose=1, random_state=RANDOM_SEED
 )
 
 
 model.fit(x_train, y_train)
 
+joblib.dump(model, "random_forest_regressor_failure.joblib")
 
 probs = model.predict_proba(x_test)
 
@@ -39,6 +40,3 @@ print(probs)
 
 
 sc = model.score(x_test, y_test)
-
-
-joblib.dump(model, "random_forest_regressor_failure.joblib")
