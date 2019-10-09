@@ -19,9 +19,7 @@ x_train, x_test, y_train, y_test = train_test_split(
     random_state=RANDOM_SEED,
 )
 
-model = RandomForestClassifier(
-    n_estimators=2000, n_jobs=-1, verbose=1, random_state=RANDOM_SEED
-)
+model = RandomForestClassifier(n_estimators=2000, n_jobs=-1, verbose=1, random_state=RANDOM_SEED)
 
 model.fit(x_train, y_train)
 

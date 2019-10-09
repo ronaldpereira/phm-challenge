@@ -81,9 +81,7 @@ for fail_asset, fail_time in tqdm(list(failures.itertuples(index=False, name=Non
         if cons_part.Part not in inserted_parts:
             train_df.loc[index, "Failure"] = True
             train_df.loc[index, "Time_failure"] = fail_time
-            train_df.loc[index, "Time_diff"] = (
-                fail_time - consumption.loc[index, "Time"]
-            )
+            train_df.loc[index, "Time_diff"] = fail_time - consumption.loc[index, "Time"]
             train_df.loc[index, "Usage_on_failure"] = usage_failure_value
             inserted_parts.append(cons_part.Part)
 
